@@ -12,17 +12,17 @@ const val ERR_WRONG_PHONE = 2
 const val ERR_WRONG_EMAIL = 3
 
 fun main() {
-    var inputData = getUserInput()
-    var command = inputData[0].lowercase()
-    while (command != CMD_EXIT) {
+    var inputData: List<String>
+    var command: String
+    do {
+        inputData = getUserInput()
+        command = inputData[0].lowercase()
         when (command) {
             CMD_HELP, "?" -> showHelp()
             CMD_ADD -> processAddCommand(inputData.subList(1, inputData.size))
             else -> showError(ERR_WRONG_CMD, command)
         }
-        inputData = getUserInput()
-        command = inputData[0].lowercase()
-    }
+    } while (command != CMD_EXIT)
     println("Выходим...")
 }
 
