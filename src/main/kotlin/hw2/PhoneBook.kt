@@ -1,8 +1,8 @@
 package hw2
 
 
-
 var lastRecord: Person? = null
+
 fun main() {
     var inputCommand: Command?
     do {
@@ -64,6 +64,7 @@ fun savePerson(addCommand: Command.Add): Person? {
             }
             return Person(addCommand.name, phone = addCommand.data.value, email = null)
         }
+
         is PersonData.Email -> {
             if (lastName.isNotEmpty() && addCommand.name == lastName) {
                 return lastRecord?.copy(email = addCommand.data.value)
@@ -76,7 +77,7 @@ fun savePerson(addCommand: Command.Add): Person? {
 /**
  * Get last record
  */
-private fun getLastPerson(): Person?  = lastRecord
+private fun getLastPerson(): Person? = lastRecord
 
 /**
  * Print last record to console
