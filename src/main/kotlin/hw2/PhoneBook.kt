@@ -1,110 +1,88 @@
 package hw2
 
-const val CMD_EXIT = "exit"
-const val CMD_HELP = "help"
-const val CMD_ADD = "add"
-const val SUB_CMD_PHONE = "phone"
-const val SUB_CMD_EMAIL = "email"
 
-const val ERR_WRONG_CMD = 0
-const val ERR_PARAMS_COUNT = 1
-const val ERR_WRONG_PHONE = 2
-const val ERR_WRONG_EMAIL = 3
 
+var lastRecord: Person? = null
 fun main() {
-    var inputData: List<String>
-    var command: String
+    var inputCommand: Command?
     do {
-        inputData = getUserInput()
-        command = inputData[0].lowercase()
-        when (command) {
-            CMD_HELP, "?" -> showHelp()
-            CMD_ADD -> processAddCommand(inputData.subList(1, inputData.size))
-            else -> showError(ERR_WRONG_CMD, command)
+        inputCommand = readCommand()?.also { println(it) }
+        if (inputCommand == null || !inputCommand.isValid()) {
+            showHelp()
+            continue
         }
-    } while (command != CMD_EXIT)
+        when (inputCommand) {
+            Command.Help -> showHelp()
+            Command.Show -> showLastRecord()
+            is Command.Add -> {
+                lastRecord = savePerson(inputCommand)
+            }
+
+            Command.Exit -> break
+        }
+    } while (true)
     println("Выходим...")
 }
 
-/**
- * Process add command with [params]
- */
-private fun processAddCommand(params: List<String>) {
-    /**
-     * Process subCommand ([SUB_CMD_PHONE], [SUB_CMD_EMAIL]) for add command
-     * @return validated argument of subcommand or null
-     */
-    fun processSubcommand(subCommand: String): String? {
-        when (subCommand) {
-            SUB_CMD_PHONE -> {
-                val phone = params.last()
-                if (!validatePhone(phone)) {
-                    showError(ERR_WRONG_PHONE, phone)
-                    return null
-                }
-                return phone
-            }
-
-            SUB_CMD_EMAIL -> {
-                val email = params.last()
-                if (!validateEmail(email)) {
-                    showError(ERR_WRONG_EMAIL, email)
-                    return null
-                }
-                return email
-            }
-
-            else -> {
-                showError(ERR_WRONG_CMD, subCommand)
-                return null
-            }
-        }
-    }
-
-    if (params.size != 3) {
-        showError(ERR_PARAMS_COUNT, CMD_ADD)
-        return
-    }
-    val subCommand = params[1].lowercase()
-    val result = processSubcommand(subCommand) ?: return
-    println("INFO: $CMD_ADD ${params.first()} $subCommand $result")
-}
 
 /**
- * Get user input from console
- * @return split input as list of String
+ * Read user input and return [Command] or null
  */
-fun getUserInput(): List<String> {
+private fun readCommand(): Command? {
     print("Команда (? - для справки): > ")
-    return readlnOrNull()?.split(Regex("""\s+""")) ?: emptyList()
+    val inputData = readlnOrNull()?.split(Regex("""\s+""")) ?: emptyList()
+    if (inputData.isEmpty()) return null
+    val cmd = inputData[0].lowercase()
+//    if (!CmdType.allTitles.containsKey(cmd)) return null
+    when (CmdType.mainFromTitle(cmd)) {
+        CmdType.Main.HELP, CmdType.Main.HELP_SHORT -> return Command.Help
+        CmdType.Main.EXIT -> return Command.Exit
+        CmdType.Main.SHOW -> return Command.Show
+        CmdType.Main.ADD -> {
+            if (inputData.size != 4) return null
+            val personData: PersonData = when (CmdType.subFromTitle(inputData[2])) {
+                CmdType.Sub.PHONE -> PersonData.Phone(inputData[3])
+                CmdType.Sub.EMAIL -> PersonData.Email(inputData[3])
+                else -> return null
+            }
+            return Command.Add(inputData[1], personData)
+        }
+
+        else -> return null
+    }
 }
 
 /**
- * Print error message
- * @param errType error type ([ERR_WRONG_CMD], [ERR_PARAMS_COUNT], [ERR_WRONG_PHONE], [ERR_WRONG_EMAIL])
- * @param params optional params
+ * Save result of [addCommand] to [lastRecord]
  */
-private fun showError(errType: Int, vararg params: String) {
-    when (errType) {
-        ERR_WRONG_CMD -> println("Неизвестная команда ${params[0]}")
-        ERR_PARAMS_COUNT -> {
-            println("Неверное количество параметров для команды ${params[0]}")
-            println(
-                """
-                |Usage: ADD <Name> PHONE <Phone>
-                |       ADD <Name> EMAIL <Email>
-            """.trimMargin()
-            )
+fun savePerson(addCommand: Command.Add): Person? {
+    val lastName: String = lastRecord?.name ?: ""
+    when (addCommand.data) {
+        is PersonData.Phone -> {
+            if (lastName.isNotEmpty() && addCommand.name == lastName) {
+                return lastRecord?.copy(phone = addCommand.data.value)
+            }
+            return Person(addCommand.name, phone = addCommand.data.value, email = null)
         }
-
-        ERR_WRONG_PHONE -> {
-            println("Неверный формат телефонного номера: ${params[0]}")
-        }
-
-        ERR_WRONG_EMAIL -> {
-            println("Неверный email: ${params[0]}")
+        is PersonData.Email -> {
+            if (lastName.isNotEmpty() && addCommand.name == lastName) {
+                return lastRecord?.copy(email = addCommand.data.value)
+            }
+            return Person(addCommand.name, phone = null, email = addCommand.data.value)
         }
     }
+}
+
+/**
+ * Get last record
+ */
+private fun getLastPerson(): Person?  = lastRecord
+
+/**
+ * Print last record to console
+ */
+private fun showLastRecord() {
+    println("LAST RECORD: ${getLastPerson() ?: "Not initialized"}")
 }
 
 /**
@@ -116,25 +94,8 @@ private fun showHelp() {
             HELP, ? - показывает это сообщение
             ADD <Name> PHONE <Phone> - добавляет телефон для <Name>
             ADD <Name> EMAIL <Phone> - добавляет email для <Name>
+            SHOW - выводит последнюю запись
             EXIT - выход из приложения
     """.trimIndent()
     println(help)
-}
-
-/**
- * Validate [phone] number
- * @return true if valid or false
- */
-private fun validatePhone(phone: String): Boolean {
-    val phoneRegex = Regex("""^(\+)?\d+$""")
-    return phoneRegex.matches(phone)
-}
-
-/**
- * Validate [email] number
- * @return true if valid or false
- */
-fun validateEmail(email: String): Boolean {
-    val emailRegex = Regex("""^[\w-]+@([\w-]+\.)[\w-]{2,4}$""")
-    return emailRegex.matches(email)
 }
