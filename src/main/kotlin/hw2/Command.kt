@@ -13,8 +13,8 @@ enum class CmdType {
 
     companion object {
         //val titles = CmdType.entries.associateBy{it.title}
-        fun mainFromTitle(title: String): CmdType.Main? = Main.entries.find { it.title == title }
-        fun subFromTitle(title: String): CmdType.Sub? = Sub.entries.find { it.title == title }
+        fun mainFromTitle(title: String): Main? = Main.entries.find { it.title == title }
+        fun subFromTitle(title: String): Sub? = Sub.entries.find { it.title == title }
     }
 }
 
@@ -27,4 +27,5 @@ sealed interface Command {
     data class Add(val name: String, val data: PersonData) : Command {
         override fun isValid() = name.isNotEmpty() && data.isValid()
     }
+    data class Wrong(val message: String) : Command
 }
