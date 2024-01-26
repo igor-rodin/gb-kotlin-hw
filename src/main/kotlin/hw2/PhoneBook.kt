@@ -26,7 +26,7 @@ fun main() {
 }
 
 
-/**
+ /**
  * Read user input and return [Command]
  */
 private fun readCommand(): Command {
@@ -35,15 +35,15 @@ private fun readCommand(): Command {
     if (inputData.isEmpty()) return Command.Wrong("Команда не может быть пустой")
     val cmd = inputData[0].lowercase()
 
-    when (CmdType.mainFromTitle(cmd)) {
-        CmdType.Main.HELP, CmdType.Main.HELP_SHORT -> return Command.Help
-        CmdType.Main.EXIT -> return Command.Exit
-        CmdType.Main.SHOW -> return Command.Show
-        CmdType.Main.ADD -> {
+    when (cmd) {
+        MainCmd.HELP, MainCmd.HELP_SHORT -> return Command.Help
+        MainCmd.EXIT -> return Command.Exit
+        MainCmd.SHOW -> return Command.Show
+        MainCmd.ADD -> {
             if (inputData.size != 4) return Command.Wrong("Неверное количество аргументов")
-            val personData = when (CmdType.subFromTitle(inputData[2])) {
-                CmdType.Sub.PHONE -> PersonData.Phone(inputData[3])
-                CmdType.Sub.EMAIL -> PersonData.Email(inputData[3])
+            val personData = when (inputData[2]) {
+                SubCmd.PHONE -> PersonData.Phone(inputData[3])
+                SubCmd.EMAIL -> PersonData.Email(inputData[3])
                 else -> return Command.Wrong("Неверная команда")
             }
             return Command.Add(inputData[1], personData)
@@ -59,21 +59,21 @@ private fun readCommand(): Command {
  * that addCommand contains, then lastRecord will be updated with new value of phone or email,
  * else new lastRecord will be created
  */
-fun savePerson(addCommand: Command.Add): Person? {
+private fun savePerson(addCommand: Command.Add): Person? {
     val lastName: String = lastRecord?.name ?: ""
     when (addCommand.data) {
         is PersonData.Phone -> {
             if (addCommand.name == lastName) {
                 return lastRecord?.copy(phone = addCommand.data.value)
             }
-            return Person(addCommand.name, phone = addCommand.data.value, email = null)
+            return Person(addCommand.name, phone = addCommand.data.value)
         }
 
         is PersonData.Email -> {
             if (addCommand.name == lastName) {
                 return lastRecord?.copy(email = addCommand.data.value)
             }
-            return Person(addCommand.name, phone = null, email = addCommand.data.value)
+            return Person(addCommand.name, email = addCommand.data.value)
         }
     }
 }

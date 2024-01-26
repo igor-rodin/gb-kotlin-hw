@@ -1,6 +1,6 @@
 package hw2
 
-data class Person(val name: String, val phone: String?, val email: String?)
+data class Person(val name: String, val phone: String? = null, val email: String? = null)
 
 sealed interface PersonData {
     val value: String
