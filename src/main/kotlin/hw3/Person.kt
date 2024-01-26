@@ -1,6 +1,23 @@
 package hw3
 
-data class Person(val name: String, val phone: String? = null, val email: String? = null)
+data class Person(val name: String) {
+    private val _phones: MutableList<String> = mutableListOf()
+    private val _emails: MutableList<String> = mutableListOf()
+
+    val phones: List<String>
+        get() = _phones
+
+    val emails: List<String>
+        get() = _emails
+
+    fun addPhone(phone: String) {
+        _phones.add(phone)
+    }
+
+    fun addEmail(email: String) {
+        _emails.add(email)
+    }
+}
 
 sealed interface PersonData {
     val value: String
