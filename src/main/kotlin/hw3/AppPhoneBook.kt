@@ -1,7 +1,6 @@
 package hw3
 
 
-val phoneBook = PhoneBook()
 
 fun main() {
     var inputCommand: Command
@@ -14,17 +13,20 @@ fun main() {
         }
         when (inputCommand) {
             Command.Help, is Command.Wrong -> showHelp()
-            is Command.Show -> showPersonInfo(phoneBook, inputCommand.name)
-            is Command.Add -> savePersonData(phoneBook, inputCommand)
-            is Command.Find -> showPersonsByPhoneOrEmail(phoneBook, inputCommand.query)
+            is Command.Show -> showPersonInfo(inputCommand.name)
+            is Command.Add -> savePersonData(inputCommand)
+            is Command.Find -> showPersonsByPhoneOrEmail(inputCommand.query)
             Command.Exit -> break
         }
     } while (true)
     println("Выходим...")
 }
 
-private fun showPersonsByPhoneOrEmail(phoneBook: PhoneBook, query: String) {
-    val persons = phoneBook.findPersonsByPhoneOrEmail(query)
+/**
+ * Print to console all contacts that contain [query]
+ */
+private fun showPersonsByPhoneOrEmail(query: String) {
+    val persons = PhoneBook.findPersonsByPhoneOrEmail(query)
     if (persons.isNotEmpty()) {
         println("Найдены контакты:")
         persons.forEach { println(it) }
@@ -37,19 +39,19 @@ private fun showPersonsByPhoneOrEmail(phoneBook: PhoneBook, query: String) {
 /**
  * Print to console information about contact with name [personMame]
  */
-private fun showPersonInfo(phoneBook: PhoneBook, personMame: String) {
-    val person = phoneBook.findPersonByName(personMame)
+private fun showPersonInfo(personMame: String) {
+    val person = PhoneBook.findPersonByName(personMame)
 
     if (person != null) println(person) else println("Контакт $personMame не найден")
 }
 
 /**
- * Save result of [inputCommand] to [phoneBook]
+ * Save result of [inputCommand] to [PhoneBook]
  */
-private fun savePersonData(phoneBook: PhoneBook, inputCommand: Command.Add) {
+private fun savePersonData(inputCommand: Command.Add) {
     when (inputCommand.data) {
-        is PersonData.Phone -> phoneBook.addPhoneToPerson(inputCommand.name, inputCommand.data.value)
-        is PersonData.Email -> phoneBook.addEmailToPerson(inputCommand.name, inputCommand.data.value)
+        is PersonData.Phone -> PhoneBook.addPhoneToPerson(inputCommand.name, inputCommand.data.value)
+        is PersonData.Email -> PhoneBook.addEmailToPerson(inputCommand.name, inputCommand.data.value)
     }
 }
 

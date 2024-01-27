@@ -1,13 +1,13 @@
 package hw3
 
 data class Person(val name: String) {
-    private val _phones: MutableList<String> = mutableListOf()
-    private val _emails: MutableList<String> = mutableListOf()
+    private val _phones: MutableSet<String> = mutableSetOf()
+    private val _emails: MutableSet<String> = mutableSetOf()
 
-    val phones: List<String>
+    val phones: Set<String>
         get() = _phones
 
-    val emails: List<String>
+    val emails: Set<String>
         get() = _emails
 
     fun addPhone(phone: String) {

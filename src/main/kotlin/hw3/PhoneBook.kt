@@ -1,6 +1,7 @@
 package hw3
 
-class PhoneBook {
+
+object PhoneBook {
     private val _phoneBook: MutableMap<String, Person> = mutableMapOf()
 
 
