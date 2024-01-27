@@ -17,11 +17,17 @@ data class Person(val name: String) {
     fun addEmail(email: String) {
         _emails.add(email)
     }
+
+    override fun toString() = "-------------------\nКонтакт $name:\n" +
+            "Телефоны: ${_phones.joinToString(", ")}\n" +
+            "Emails: ${_emails.joinToString(", ")}" +
+            "\n-------------------"
 }
 
 sealed interface PersonData {
     val value: String
     fun isValid(): Boolean
+
     data class Phone(override val value: String) : PersonData {
         override fun isValid() = Regex("""^(\+)?\d+$""").matches(value)
     }
