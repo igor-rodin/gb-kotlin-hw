@@ -1,29 +1,16 @@
 package hw3
 
 
-object PhoneBook {
+class PhoneBook {
     private val _phoneBook: MutableMap<String, Person> = mutableMapOf()
 
 
     fun addPhoneToPerson(personName: String, phone: String) {
-        if (_phoneBook[personName] == null) {
-            _phoneBook[personName] = Person(personName).apply {
-                addPhone(phone)
-            }
-        } else {
-            _phoneBook[personName]?.addPhone(phone)
-        }
+        _phoneBook.getOrPut(personName) { Person(personName) }.addPhone(phone)
     }
 
     fun addEmailToPerson(personName: String, email: String) {
-        if (_phoneBook[personName] == null) {
-            _phoneBook[personName] = Person(personName).apply {
-                addEmail(email)
-            }
-        } else {
-            _phoneBook[personName]?.addEmail(email)
-        }
-
+        _phoneBook.getOrPut(personName) { Person(personName) }.addEmail(email)
     }
 
     fun findPersonByName(personName: String): Person? = _phoneBook[personName]
