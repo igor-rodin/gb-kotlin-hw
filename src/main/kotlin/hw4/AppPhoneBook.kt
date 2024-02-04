@@ -1,5 +1,13 @@
 package hw4
 
+import hw4.dsl.createPhoneBookJson
+import java.io.File
+import kotlin.contracts.contract
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createDirectory
+import kotlin.io.path.exists
+
 
 val phoneBook = PhoneBook()
 fun main() {
@@ -13,13 +21,44 @@ fun main() {
         }
         when (inputCommand) {
             Command.Help, is Command.Wrong -> showHelp()
-            is Command.Show -> showPersonInfo( phoneBook, inputCommand.name)
+            is Command.Show -> showPersonInfo(phoneBook, inputCommand.name)
             is Command.Add -> savePersonData(phoneBook, inputCommand)
             is Command.Find -> showPersonsByPhoneOrEmail(phoneBook, inputCommand.query)
+            is Command.Export -> exportPhoneBookToJson(phoneBook, inputCommand.path)
             Command.Exit -> break
         }
     } while (true)
     println("Выходим...")
+}
+
+/**
+ * Write [data] to file [path]
+ * If parent directory of [path] doesn't exist - create it
+ */
+private fun writeFile(path: String, data: String) {
+    val absPath = Path(path).toAbsolutePath().normalize()
+    if (!absPath.parent.exists()) {
+        absPath.parent.createDirectories()
+    }
+
+    File(absPath.toString()).writeText(data)
+}
+
+/**
+ * Export contacts [phoneBook] to JSON file [path]
+ */
+private fun exportPhoneBookToJson(phoneBook: PhoneBook, path: String) {
+    val persons = phoneBook.getAllPersons()
+    val phoneBookJson = createPhoneBookJson {
+        persons.forEach {
+            contact {
+                name = it.name
+                phones = it.phones
+                emails = it.emails
+            }
+        }
+    }
+    writeFile(path, phoneBookJson.toString())
 }
 
 /**
@@ -30,8 +69,7 @@ private fun showPersonsByPhoneOrEmail(phoneBook: PhoneBook, query: String) {
     if (persons.isNotEmpty()) {
         println("Найдены контакты:")
         persons.forEach { println(it) }
-    }
-    else {
+    } else {
         println("Контакты не найдены")
     }
 }
@@ -39,7 +77,7 @@ private fun showPersonsByPhoneOrEmail(phoneBook: PhoneBook, query: String) {
 /**
  * Print to console information about contact with name [personMame]
  */
-private fun showPersonInfo(phoneBook: PhoneBook,  personMame: String) {
+private fun showPersonInfo(phoneBook: PhoneBook, personMame: String) {
     val person = phoneBook.findPersonByName(personMame)
 
     if (person != null) println(person) else println("Контакт $personMame не найден")
@@ -81,10 +119,17 @@ private fun readCommand(): Command {
             }
             return Command.Add(inputData[1], personData)
         }
+
         MainCmd.FIND -> {
             if (inputData.size != 2) return Command.Wrong("Неверное количество аргументов")
             return Command.Find(inputData[1])
         }
+
+        MainCmd.EXPORT -> {
+            if (inputData.size != 2) return Command.Wrong("Неверное количество аргументов")
+            return Command.Export(inputData[1])
+        }
+
         else -> return Command.Wrong("Неверная команда")
     }
 }
@@ -101,6 +146,7 @@ private fun showHelp() {
             ADD <Name> EMAIL <Phone> - добавляет email для <Name>
             SHOW <Name> - выводит информацию о контакте <Name>
             FIND <PHONE|EMAIL> - выводит контакты, содержащие <PHONE|EMAIL>
+            EXPORT <PATH/TO/FILE> - экспортирует контакты в JSON формате  по указанному пути <PATH/TO/FILE>
             EXIT - выход из приложения
     """.trimIndent()
     println(help)

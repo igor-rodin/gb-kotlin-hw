@@ -1,5 +1,9 @@
 package hw4
 
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.name
+
 
 object MainCmd {
     const val EXIT = "exit"
@@ -8,6 +12,7 @@ object MainCmd {
     const val ADD = "add"
     const val SHOW = "show"
     const val FIND = "find"
+    const val EXPORT = "export"
 }
 object SubCmd {
     const val PHONE = "phone"
@@ -28,6 +33,9 @@ sealed interface Command {
 
     data class Find(val query: String) : Command {
         override fun isValid() = query.isNotEmpty()
+    }
+    data class Export(val path: String) : Command {
+        override fun isValid() = path.isNotEmpty()
     }
 
     data class Wrong(val message: String) : Command

@@ -18,5 +18,5 @@ class PhoneBook {
     fun findPersonsByPhoneOrEmail(query: String): List<Person> =
         _phoneBook.values.filter { it.emails.contains(query) || it.phones.contains(query) }
 
-
+    fun getAllPersons(): List<Person> = _phoneBook.values.toList()
 }
